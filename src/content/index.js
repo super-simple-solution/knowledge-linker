@@ -17,12 +17,12 @@ const keyWordList = ['encode', 'stemmer']
 wrapTextNodes()
 
 function wrapTextNodes() {
-  let result = {
+  const result = {
     contentList: [],
     singleWordCount: 0,
   }
 
-  var treeWalker = document.createTreeWalker(
+  const treeWalker = document.createTreeWalker(
     document.body, // 从body元素开始
     NodeFilter.SHOW_TEXT, // 只遍历文本节点
     (node) => (node.nodeValue.trim().length < 2 ? NodeFilter.FILTER_SKIP : NodeFilter.FILTER_ACCEPT),
@@ -30,14 +30,14 @@ function wrapTextNodes() {
 
   while (treeWalker.nextNode()) {
     // 遍历所有文本节点
-    var textNode = treeWalker.currentNode
+    const textNode = treeWalker.currentNode
     const content = textNode.nodeValue.trim()
     result.contentList.push(content)
     // TODO: 避免encoder 匹配上 encode 关键词
     if (!/\s/.test(content)) {
       // 单词
       result.singleWordCount++
-      let wrapper = matchKeyWord(content, textNode)
+      const wrapper = matchKeyWord(content, textNode)
       if (wrapper) {
         textNode.parentNode.insertBefore(wrapper, textNode)
         textNode.parentNode.removeChild(textNode)
@@ -69,8 +69,8 @@ function matchKeyWord(word, textNode) {
 }
 
 function markWord(word, textNode) {
-  var wrapper = document.createElement('sss-hc') // 创建新的元素
-  var highlightedText = textNode.nodeValue.replace(
+  const wrapper = document.createElement('sss-hc') // 创建新的元素
+  const highlightedText = textNode.nodeValue.replace(
     new RegExp(word, 'g'),
     `<sss-highlight id="relin-${++wordId}" class="relingo-underline relinmark" data-word="${word}"><relin-origin>${word}</relin-origin></sss-highlight>`,
   )
