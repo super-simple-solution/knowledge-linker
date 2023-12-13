@@ -1,0 +1,27 @@
+sss-highlight {
+  position: relative;
+  cursor: pointer;
+  .sss-underline, .sss-highlight-annotated { //单词下划线, 下划线+注释
+    sss-origin {
+      border-bottom: 1px dashed rgb(255, 112, 8);
+    }  
+  }
+  .sss-highlight,  .sss-highlight-annotated {  //单词高亮, 高亮+注释
+    sss-origin {
+      color: rgb(255, 112, 8) !important;
+      border-bottom: none;
+    }
+  }
+  // .sss-annotated { // 注释
+
+  // }
+  sss-origin {
+    transition: all 0.2s ease 0.2s;
+  } 
+  sss-target {
+    display: inline !important;
+    opacity: 0.6 !important;
+  }
+}
+
+// sss-hc
