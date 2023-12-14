@@ -1,21 +1,24 @@
 import '@/style/index.scss'
 
-let wordId = 0
+let count = 0
+let inited = false
 // 停用词hash
 const stopWordsHashMap = {}
 // 当前文档不满足匹配词的hash
 const misMatchedHashMap = {}
 const matchedHashMap = {}
-const keyWordList = ['比较火', '十二届']
+const keyWordList = ['比较火', '十二届', '沉浸式']
 
-window.onload = wrapTextNodes
-// wrapTextNodes()
-
-function nodeFilter(str) {
-  return str.trim().length < 2
+// 过滤纯数字，标点，javascript或者json代码，及html模板
+function nodeFilter(node) {
+  return node.nodeType === Node.TEXT_NODE && node.nodeValue.trim().length > 2
 }
 
+wrapTextNodes()
+
 function wrapTextNodes() {
+  if (inited) return
+  if (count++ > 5) return
   const result = {
     contentList: [],
     singleWordCount: 0,
@@ -24,12 +27,17 @@ function wrapTextNodes() {
   const treeWalker = document.createTreeWalker(
     document.body, // 从body元素开始
     NodeFilter.SHOW_TEXT, // 只遍历文本节点
-    (node) => (nodeFilter(node.nodeValue) ? NodeFilter.FILTER_SKIP : NodeFilter.FILTER_ACCEPT),
+    {
+      acceptNode: nodeFilter,
+    },
   )
+
+  const operateNodes = []
 
   while (treeWalker.nextNode()) {
     // 遍历所有文本节点`
     const textNode = treeWalker.currentNode
+    console.log(textNode.nodeValue, 'textNode')
     const content = textNode.nodeValue.trim()
     result.contentList.push(content)
     let textRes = ''
@@ -37,25 +45,36 @@ function wrapTextNodes() {
     if (!/\s/.test(content) && /^\w+$/.test(content)) {
       // 单词
       result.singleWordCount++
-      textRes = matchKeyWord(content, textNode.nodeValue)
+      textRes = matchKeyWord(content, content)
     } else {
-      // TODO
+      // TODO: indexOf过于粗糙
       // 句子
-      textRes = textNode.nodeValue
+      textRes = content
       for (let i = 0; i < keyWordList.length; i++) {
-        if (content.indexOf(keyWordList[i]) !== -1) {
+        if (textRes.indexOf(keyWordList[i]) !== -1) {
           textRes = matchKeyWord(keyWordList[i], textRes)
         }
       }
     }
-    if (textRes) {
-      const wrapper = document.createElement('sss-hc')
-      wrapper.innerHTML = textRes
-      textNode.parentNode.insertBefore(wrapper, textNode)
-      textNode.parentNode.removeChild(textNode)
+    if (textRes && textRes.length !== content.length) {
+      operateNodes.push({
+        node: textNode,
+        content: textRes,
+      })
     }
   }
+  operateNodes.forEach(({ node: textNode, content: textRes }) => {
+    const wrapper = document.createElement('sss-hc')
+    wrapper.innerHTML = textRes
+    textNode.parentNode.insertBefore(wrapper, textNode)
+    textNode.parentNode.removeChild(textNode)
+  })
   console.log(result, 'result')
+  if (result.contentList.length < 10) {
+    setTimeout(wrapTextNodes, 2000)
+    return
+  }
+  inited = true
   return result
 }
 
@@ -78,8 +97,10 @@ function matchKeyWord(word, nodeValue) {
 }
 
 function markWord(word, nodeValue) {
-  return nodeValue.replace(
-    new RegExp(word, 'g'),
-    `<sss-highlight id="sss-${++wordId}" class="sss-underline sss-mark" data-word="${word}"><sss-origin>${word}</sss-origin></sss-highlight>`,
-  )
+  const elStr = `<sss-highlight id="sss-${matchedHashMap[word]}" class="sss-underline sss-mark" data-word="${word}"><sss-origin>${word}</sss-origin></sss-highlight>`
+  if (word === nodeValue) {
+    return elStr
+  } else {
+    return nodeValue.replace(new RegExp(word, 'g'), elStr)
+  }
 }
