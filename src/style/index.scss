@@ -1,4 +1,4 @@
-sss-highlight {
+sss-hc {
   position: relative;
   cursor: pointer;
   .sss-underline, .sss-highlight-annotated { //单词下划线, 下划线+注释
@@ -21,6 +21,12 @@ sss-highlight {
   sss-target {
     display: inline !important;
     opacity: 0.6 !important;
+  }
+}
+
+.sss-highlight:hover {
+  sss-origin {
+    background: rgba(255, 223, 148, 0.3);
   }
 }
 

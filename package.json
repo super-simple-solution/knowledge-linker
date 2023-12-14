@@ -36,6 +36,7 @@
     "vite-plugin-zip-pack": "^1.0.6"
   },
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
     "@supabase/supabase-js": "^2.38.4",
     "vue": "^3.3.11"
   }
