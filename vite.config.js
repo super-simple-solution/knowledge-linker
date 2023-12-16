@@ -12,6 +12,7 @@ export default defineConfig({
   },
   esbuild: {
     drop: ['console', 'debugger'],
+    jsxInject: 'import { h, Fragment } from "@/core/jsx-runtime"',
   },
   resolve: {
     alias: {

@@ -9,6 +9,21 @@ type Map = {
   [key: string]: number
 }
 
+type wordData = {
+  title: string
+  translate: {
+    zh: string
+  }
+  content: string
+  detail: string
+  links: [
+    {
+      src: string
+      source_name: string
+    },
+  ]
+}
+
 const stopWordsHashMap: Map = {}
 // 当前文档不满足匹配词的hash
 const misMatchedHashMap: Map = {}
@@ -79,7 +94,6 @@ export function markKeyWord() {
     textNode.parentNode?.insertBefore(wrapper, textNode)
     textNode.parentNode?.removeChild(textNode)
   })
-  console.log(result, 'result')
   if (result.contentList.length < 10) {
     setTimeout(markKeyWord, 2000)
     return
@@ -95,7 +109,6 @@ export function markKeyWord() {
 function initTooltip() {
   const tooltip = document.createElement('div')
   tooltip.id = 'tooltip'
-  tooltip.setAttribute('role', 'tooltip')
   tooltip.innerHTML = '<div id="arrow" data-popper-arrow></div>'
   document.body.appendChild(tooltip)
 }
@@ -129,53 +142,50 @@ function markWord(word: string, nodeValue: string): string {
 
 document.addEventListener('mouseover', (e) => {
   const target = e.target as Element
-  if (target?.tagName !== 'SSS-ORIGIN') return
   if (!target.textContent || !target.parentElement) return
-  const word = target.textContent.trim()
-  const wordData = keywordMap[word as keyof typeof keywordMap]
-  const tooltip = document.getElementById('tooltip')
-  if (!tooltip) return
-  tooltip.innerHTML = `<span>${wordData.title}<span><span>${wordData.content}<span>`
-  if (!popperInstance) {
-    popperInstance = createPopper(target.parentElement, tooltip as HTMLElement)
+  if (target?.tagName === 'SSS-ORIGIN') {
+    const word = target.textContent.trim()
+    const wordItem = keywordMap[word as keyof typeof keywordMap]
+    const tooltip = document.getElementById('tooltip')
+    if (!tooltip) return
+    const tooltipContent = tooltipContentGene(wordItem as wordData)
+    if (tooltip.childElementCount === 1) {
+      // @ts-expect-error jsx dom
+      tooltip.appendChild(tooltipContent)
+    } else {
+      // @ts-expect-error jsx dom
+      tooltip.replaceChild(tooltipContent, tooltip.children[1])
+    }
+    if (!popperInstance) {
+      popperInstance = createPopper(target.parentElement, tooltip as HTMLElement)
+    }
+  } else if (target.closest('#tooltip')) {
+    return
+  } else {
+    hidePop()
   }
-  showPop()
 })
 
-// document.addEventListener('mouseleave', (e) => {
-//   const target = e.target as Element
-//   if (target?.tagName !== 'SSS-ORIGIN') return
-//   if (!target.textContent || !target.parentElement) return
-//   const tooltip = document.getElementById('tooltip')
-//   if (!tooltip) return
-//   hidePop()
-// })
-
-function showPop() {
-  // Make the tooltip visible
-  const tooltipEl = document.getElementById('tooltip')
-  if (!tooltipEl) return
-  tooltipEl.setAttribute('data-show', '')
-
-  // Enable the event listeners
-  popperInstance.setOptions((options: any) => ({
-    ...options,
-    modifiers: [...options.modifiers, { name: 'eventListeners', enabled: true }],
-  }))
-
-  // Update its position
-  popperInstance.update()
+function hidePop() {
+  if (!popperInstance) return
+  popperInstance.destroy()
+  popperInstance = null
 }
 
-function hidePop() {
-  const tooltipEl = document.getElementById('tooltip')
-  if (!tooltipEl) return
-  // Hide the tooltip
-  tooltipEl.removeAttribute('data-show')
-
-  // Disable the event listeners
-  popperInstance.setOptions((options: any) => ({
-    ...options,
-    modifiers: [...options.modifiers, { name: 'eventListeners', enabled: false }],
-  }))
+function tooltipContentGene(data: wordData) {
+  return (
+    <div>
+      <div className="sss-tooltip-title">{data.title}</div>
+      <div className="sss-tooltip-content">{data.content}</div>
+      <div className="sss-tooltip-footer float-right">
+        {data.links.map((item) => {
+          return (
+            <a href={item.src} target="_blank">
+              {item.source_name}
+            </a>
+          )
+        })}
+      </div>
+    </div>
+  )
 }

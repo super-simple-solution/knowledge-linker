@@ -7,6 +7,8 @@
     "noImplicitThis": true,
     "strict": true,
     "jsx": "preserve",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
     "sourceMap": true,
     "resolveJsonModule": true,
     "allowJs": true,
@@ -28,6 +30,7 @@
   },
   "include": [
     "src/**/*.ts",
+    "src/**/*.tsx",
     "src/**/*.d.ts",
   ],
   "exclude": [
